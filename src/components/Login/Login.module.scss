@@ -1,0 +1,98 @@
+$primary-color: #4caf50;
+$error-color: #e53935;
+$background-color: #f5f5f5;
+$form-background: #ffffff;
+$input-border-color: #ccc;
+$input-focus-border-color: $primary-color;
+$shadow-color: rgba(0, 0, 0, 0.1);
+
+.loginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: $background-color;
+  padding: 20px;
+}
+
+.loginForm {
+  background-color: $form-background;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px $shadow-color;
+  width: 100%;
+  max-width: 400px;
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.title {
+  font-size: 28px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid $input-border-color;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #333;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    border-color: $input-focus-border-color;
+    outline: none;
+  }
+}
+
+.error {
+  color: $error-color;
+  margin-bottom: 10px;
+}
+
+.loginButton {
+  width: 100%;
+  padding: 12px;
+  background-color: $primary-color;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 600px) {
+  .loginForm {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  input {
+    font-size: 14px;
+  }
+}
