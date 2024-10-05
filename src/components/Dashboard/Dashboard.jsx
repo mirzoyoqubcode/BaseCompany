@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FaSearch,
   FaDatabase,
@@ -9,9 +9,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import styles from "./Dashboard.module.scss";
 import Navbar from "../Navbar/Navbar";
+import CourseModal from "../CourseModal/CourseModal"; // Import the CourseModal
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [isModalOpen, setModalOpen] = useState(false);
 
   return (
     <div className={styles.dashboardContainer}>
@@ -26,7 +28,7 @@ const Dashboard = () => {
           className={styles.searchButton}
           onClick={() => console.log("Search clicked")}
         >
-          <FaSearch style={{ marginRight: "5px" }} /> Search
+          <FaSearch /> Search
         </button>
       </div>
       <div className={styles.buttonGroup}>
@@ -34,27 +36,30 @@ const Dashboard = () => {
           className={styles.actionButton}
           onClick={() => navigate("/database")}
         >
-          <FaDatabase style={{ marginRight: "5px" }} /> База
+          <FaDatabase /> База
         </button>
         <button
           className={styles.actionButton}
           onClick={() => navigate("/clients")}
         >
-          <FaUserFriends style={{ marginRight: "5px" }} /> Клиенты
+          <FaUserFriends /> Клиенты
         </button>
         <button
           className={styles.actionButton}
           onClick={() => navigate("/sales")}
         >
-          <FaMoneyBillWave style={{ marginRight: "5px" }} /> Продажа
+          <FaMoneyBillWave /> Продажа
         </button>
         <button
           className={styles.actionButton}
-          onClick={() => navigate("/courses")}
+          onClick={() => setModalOpen(true)} // Open the modal when the button is clicked
         >
-          <FaBookOpen style={{ marginRight: "5px" }} /> Курс
+          <FaBookOpen /> Курс
         </button>
       </div>
+
+      {/* Render the CourseModal and pass props */}
+      <CourseModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
     </div>
   );
 };

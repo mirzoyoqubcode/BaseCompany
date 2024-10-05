@@ -1,0 +1,134 @@
+.wrapper_product_database {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+
+  .databasePage {
+    h1.title {
+      text-align: center;
+      color: #333;
+    }
+
+    .formContainer {
+      margin: 20px 0;
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 5px;
+
+      h2 {
+        margin-bottom: 15px;
+        color: #666;
+      }
+
+      .imageUpload {
+        margin-bottom: 15px;
+
+        input[type="file"] {
+          display: block;
+          margin-bottom: 10px;
+        }
+
+        .imagePreviewContainer {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+
+          .imagePreviewWrapper {
+            position: relative;
+
+            img.imagePreview {
+              max-width: 100px;
+              max-height: 100px;
+              border: 1px solid #ddd;
+              border-radius: 5px;
+            }
+
+            .removeImageButton {
+              position: absolute;
+              top: 0;
+              right: 0;
+              background: red;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              padding: 2px 5px;
+              font-size: 12px;
+            }
+          }
+        }
+      }
+
+      input.inputField {
+        width: calc(100% - 20px);
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      .submitButton {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: #45a049;
+        }
+      }
+    }
+
+    h2 {
+      margin-top: 30px;
+      color: #666;
+    }
+
+    .productTable {
+      width: 100%;
+      border-collapse: collapse;
+
+      th {
+        background-color: #f2f2f2;
+        padding: 10px;
+        text-align: left; /* Align header text to the left */
+      }
+
+      td {
+        border: 1px solid #ddd;
+        padding: 10px;
+
+        .imageContainer {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center; /* Center images in the cell */
+
+          img.productImage {
+            max-width: 80px; /* Set max-width for better visibility */
+            max-height: 80px; /* Set max-height for consistent sizing */
+            margin: 5px; /* Add margin for spacing between images */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            object-fit: cover; /* Ensure images maintain aspect ratio */
+            transition: transform 0.3s; /* Add transition for hover effect */
+
+            &:hover {
+              transform: scale(1.05); /* Slightly zoom on hover */
+            }
+          }
+        }
+      }
+
+      .removeButton {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+
+        svg {
+          color: red;
+        }
+      }
+    }
+  }
+}

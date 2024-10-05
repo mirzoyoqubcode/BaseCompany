@@ -5,7 +5,7 @@ import Dashboard from "./components/Dashboard/Dashboard";
 import DatabasePage from "./components/DatabasePage/DatabasePage";
 import ClientsPage from "./components/ClientsPage/ClientsPage";
 import SalesPage from "./components/SalesPage/SalesPage";
-import CoursesPage from "./components/CoursesPage/CoursesPage";
+import CoursesPage from "./components/CourseModal/CourseModal";
 
 const App = () => {
   return (
@@ -16,7 +16,6 @@ const App = () => {
       <Route path="/database" element={<DatabasePage />} />
       <Route path="/clients" element={<ClientsPage />} />
       <Route path="/sales" element={<SalesPage />} />
-      <Route path="/courses" element={<CoursesPage />} />
     </Routes>
   );
 };

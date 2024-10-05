@@ -1,8 +1,20 @@
-nav {
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  color: #34495e;
+  font-size: 24px;
+  flex-grow: 1;
+}
+
+.buttonContainer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
+
 .historyButton {
   padding: 10px 20px;
   background-color: #e74c3c;
@@ -12,8 +24,45 @@ nav {
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s;
+  margin-right: 10px;
 
   &:hover {
     background-color: #c0392b;
+  }
+}
+
+.backButton {
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: #ffffff;
+  border: none;
+  margin-right: 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  gap: 1rem;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: #2980b9;
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 14px;
+    text-align: center;
+  }
+  .historyButton {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+  .backButton {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-right: 0;
   }
 }
