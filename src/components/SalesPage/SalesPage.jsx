@@ -4,8 +4,10 @@ import styles from "./SalesPage.module.scss";
 import { ThreeDots } from "react-loader-spinner";
 import { toast } from "react-toastify";
 import { AiOutlineSearch, AiOutlineShoppingCart } from "react-icons/ai";
+import jsPDF from "jspdf"; // Use jsPDF imported from CDN
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Navbar/Navbar";
+import autoTable from "jspdf-autotable"; // Use AutoTable imported from CDN
 
 const API_URL = "http://46.101.131.127:8090/api/v1/products";
 const ORDER_API_URL = "http://46.101.131.127:8090/api/v1/orders";
@@ -82,72 +84,67 @@ const SalesPage = () => {
   };
 
   const handleCheckout = async () => {
-    if (products.length === 0) {
-      toast.error("Нет товаров для оформления покупки.");
-      return;
-    }
+    // Checkout logic to save order goes here
+  };
 
-    const currencyRate = localStorage.getItem("dollarAmount");
+  // Function to handle PDF download
+  const handleDownloadInvoice = () => {
+    const doc = new jsPDF();
+    doc.setFont("Helvetica", "normal");
 
-    const orderItems = products
-      .filter((product) => product.localQuantity > 0)
-      .map((product) => ({
-        productId: product.productId,
-        productName: product.name,
-        quantity: product.localQuantity,
-        price: product.sellingPrice,
-        totalAmount: (product.sellingPrice * product.localQuantity).toFixed(2),
-        currency: "USD",
-        totalInUZS: (
-          product.sellingPrice *
-          product.localQuantity *
-          currencyRate
-        ).toFixed(2),
-        currencyRate: currencyRate,
-      }));
+    // Title
+    doc.setFontSize(20);
+    doc.text("Инвойс", 20, 20);
 
-    if (orderItems.length === 0) {
-      toast.error("Нет действительных товаров для оформления покупки.");
-      return;
-    }
+    // Add invoice date
+    doc.setFontSize(12);
+    doc.text(`Дата: ${new Date().toLocaleDateString()}`, 20, 30);
 
-    const client = {
-      id: 1,
-      name: "Client Name",
-      phoneNumber: "Client Phone Number",
-      telegramUsername: "Client Telegram Username",
-    };
+    // Column headers
+    const headers = [
+      "№",
+      "Наименование",
+      "КОД",
+      "Цена",
+      "Тип",
+      "Склад",
+      "Доступно",
+      "Кол-во",
+      "Итого",
+    ];
 
-    const orderData = {
-      client,
-      orderItems,
-      totalAmount: calculateTotal(),
-      currencyRate: currencyRate,
-    };
+    // Prepare data for the table
+    const tableData = products.map((product, index) => [
+      (index + 1).toString(),
+      product.name,
+      product.productId.toString(),
+      product.sellingPrice.toFixed(2),
+      product.type,
+      product.store,
+      product.quantity.toString(),
+      product.localQuantity.toString(),
+      (product.sellingPrice * product.localQuantity).toFixed(2),
+    ]);
 
-    console.log("Данные заказа: ", orderData);
+    // Use jsPDF-AutoTable to create a table
+    autoTable(doc, {
+      head: [headers],
+      body: tableData,
+      startY: 50,
+      styles: { cellPadding: 5, fontSize: 10 },
+    });
 
-    try {
-      const response = await fetch(ORDER_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderData),
-      });
+    // Total amount at the end of the invoice
+    const totalAmount = calculateTotal();
+    doc.setFont("Helvetica", "bold");
+    doc.text(
+      `Общая сумма: ${totalAmount.toFixed(2)} сум`,
+      20,
+      doc.autoTable.previous.finalY + 10
+    );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Ответ об ошибке: ", errorData);
-        // throw new Error(errorData.message);
-      }
-
-      setProducts([]);
-      toast.success("Покупка успешно оформлена!");
-    } catch (error) {
-      console.error("Ошибка при оформлении заказа:", error);
-      toast.error("Ошибка оформления покупки: " + error.message);
-    }
+    // Save the PDF
+    doc.save("invoice.pdf");
   };
 
   return (
@@ -238,7 +235,7 @@ const SalesPage = () => {
         <span className={styles.totalPrice}>
           {calculateTotal().toFixed(2)} сум
         </span>
-        <button className={styles.checkoutBtn} onClick={handleCheckout}>
+        <button className={styles.checkoutBtn} onClick={handleDownloadInvoice}>
           <AiOutlineShoppingCart size={24} />
         </button>
       </footer>
