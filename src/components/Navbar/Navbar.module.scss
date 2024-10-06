@@ -8,6 +8,7 @@
   color: #34495e;
   font-size: 24px;
   flex-grow: 1;
+  margin-top: 1rem;
 }
 
 .buttonContainer {
@@ -49,6 +50,10 @@
   &:hover {
     background-color: #2980b9;
   }
+}
+.link {
+  text-decoration: none;
+  color: white;
 }
 
 @media (max-width: 768px) {

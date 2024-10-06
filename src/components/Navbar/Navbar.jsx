@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Navbar.module.scss";
 import { IoMdArrowBack } from "react-icons/io";
 const Navbar = () => {
@@ -16,11 +16,10 @@ const Navbar = () => {
         Назад
       </button>
       <h1 className={styles.title}>Добро пожаловать!</h1>
-      <button
-        className={styles.historyButton}
-        onClick={() => console.log("История clicked")}
-      >
-        История
+      <button className={styles.historyButton}>
+        <Link to={"/historyofcheck"} className={styles.link}>
+          История
+        </Link>
       </button>
     </nav>
   );

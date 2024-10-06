@@ -74,22 +74,32 @@ const ClientsPage = () => {
   };
 
   const editClient = (client) => {
-    setNewClient(client);
-    setEditMode(true);
-    setEditingClientId(client.id);
+    const confirmEdit = window.confirm(
+      "Вы уверены, что хотите редактировать этого клиента?"
+    );
+    if (confirmEdit) {
+      setNewClient(client);
+      setEditMode(true);
+      setEditingClientId(client.id);
+    }
   };
 
   const deleteClient = async (id) => {
-    setLoading(true);
-    try {
-      await axios.delete(`http://46.101.131.127:8090/api/v1/clients/${id}`);
-      setClients(clients.filter((client) => client.id !== id));
-      toast.success("Клиент успешно удалён!");
-    } catch (err) {
-      console.error("Error deleting client", err);
-      toast.error("Не удалось удалить клиента. Попробуйте снова.");
-    } finally {
-      setLoading(false);
+    const confirmDelete = window.confirm(
+      "Вы уверены, что хотите удалить этого клиента?"
+    );
+    if (confirmDelete) {
+      setLoading(true);
+      try {
+        await axios.delete(`http://46.101.131.127:8090/api/v1/clients/${id}`);
+        setClients(clients.filter((client) => client.id !== id));
+        toast.success("Клиент успешно удалён!");
+      } catch (err) {
+        console.error("Error deleting client", err);
+        toast.error("Не удалось удалить клиента. Попробуйте снова.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
