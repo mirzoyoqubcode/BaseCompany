@@ -8,17 +8,17 @@ import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Navbar/Navbar";
 
 const API_URL = "http://46.101.131.127:8090/api/v1/products";
-const CLIENT_API_URL = "http://46.101.131.127:8090/api/v1/clients"; // New Client API URL
+const CLIENT_API_URL = "http://46.101.131.127:8090/api/v1/clients";
+const IMAGE_API_URL = "http://46.101.131.127:8090/api/v1/files/image";
 
 const SalesPage = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchCode, setSearchCode] = useState("");
-  const [clients, setClients] = useState([]); // State for clients
-  const [selectedClientId, setSelectedClientId] = useState(null); // State for selected client
+  const [clients, setClients] = useState([]);
+  const [selectedClientId, setSelectedClientId] = useState(null);
 
   useEffect(() => {
-    // Fetch the client list when the component mounts
     const fetchClients = async () => {
       try {
         const response = await fetch(CLIENT_API_URL);
@@ -33,6 +33,18 @@ const SalesPage = () => {
     fetchClients();
   }, []);
 
+  const fetchImage = async (imageUrl) => {
+    try {
+      const response = await fetch(`${IMAGE_API_URL}?imageUrl=${imageUrl}`);
+      if (!response.ok) throw new Error("Ошибка при загрузке изображения.");
+      const blob = await response.blob();
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Ошибка при загрузке изображения:", error);
+      return null;
+    }
+  };
+
   const handleSearch = useCallback(async () => {
     if (!searchCode) {
       toast.error("Пожалуйста, введите код продукта.");
@@ -46,6 +58,8 @@ const SalesPage = () => {
       if (!response.ok) throw new Error("Продукт не найден.");
 
       const data = await response.json();
+      const imageUrl = await fetchImage(data.imageUrl);
+      data.imageUrl = imageUrl;
 
       setProducts((prevProducts) => {
         const existingProductIndex = prevProducts.findIndex(
@@ -55,10 +69,6 @@ const SalesPage = () => {
         const updatedProduct = {
           ...data,
           localQuantity: 1,
-          imageUrl:
-            data.images.length > 0
-              ? data.images[0]
-              : "static/images/tshirt.png",
         };
 
         if (existingProductIndex !== -1) {
@@ -124,7 +134,7 @@ const SalesPage = () => {
     const orderData = {
       clientId: selectedClientId,
       orderItems: orderItems,
-      currencyRate: 1, // Adjust this based on your requirements
+      currencyRate: 1,
     };
 
     try {
@@ -143,7 +153,7 @@ const SalesPage = () => {
       const result = await response.json();
       console.log("Заказ успешно создан:", result);
       toast.success("Заказ успешно создан!");
-      window.print(); // Print the invoice after successful order creation
+      window.print();
     } catch (error) {
       console.error("Ошибка при создании заказа:", error);
       toast.error("Ошибка при создании заказа.");
@@ -163,9 +173,11 @@ const SalesPage = () => {
           onChange={(e) => setSearchCode(e.target.value)}
           placeholder="Поиск по коду..."
         />
-        <button className={styles.searchBtn} onClick={handleSearch}>
-          <AiOutlineSearch size={24} />
-        </button>
+        <AiOutlineSearch
+          size={24}
+          className={styles.searchBtn}
+          onClick={handleSearch}
+        />
       </div>
       <div className={styles.clientSelectContainer}>
         <select
@@ -212,14 +224,18 @@ const SalesPage = () => {
                 >
                   <td>{index + 1}</td>
                   <td>
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className={styles.productImg}
-                    />
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className={styles.productImg}
+                      />
+                    ) : (
+                      <span>Нет изображений</span>
+                    )}
                   </td>
                   <td>{product.productId}</td>
-                  <td>{product.sellingPrice.toFixed(2)}</td>
+                  <td>{product.sellingPrice}</td>
                   <td>{product.type}</td>
                   <td>{product.store}</td>
                   <td>{product.quantity}</td>

@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { BallTriangle } from "react-loader-spinner";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../AuthContext";
 import styles from "./Login.module.scss";
 
 const Login = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,9 +20,11 @@ const Login = () => {
 
     setTimeout(() => {
       if (username === "mirzoyoqub" && password === "mirzoyoqub2004") {
-        navigate("/dashboard");
+        login();
+        const redirectPath = location.state?.from || "/dashboard";
+        navigate(redirectPath);
       } else {
-        setError("Invalid credentials");
+        setError("Неверные учетные данные");
       }
       setIsSubmitting(false);
     }, 1000);

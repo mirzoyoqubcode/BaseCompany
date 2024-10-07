@@ -28,7 +28,7 @@ const DatabasePage = () => {
 
   useEffect(() => {
     fetchProducts();
-    const interval = setInterval(fetchProducts, 15000);
+    const interval = setInterval(fetchProducts, 25000);
     return () => clearInterval(interval);
   }, []);
 
@@ -40,7 +40,6 @@ const DatabasePage = () => {
       );
       setBazaData(response.data);
     } catch (err) {
-      console.error("Error fetching products", err);
       toast.error("Error fetching products.");
     } finally {
       setLoading(false);
@@ -59,10 +58,7 @@ const DatabasePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = {
-      ...formData,
-      currency: "USD",
-    };
+    const data = { ...formData, currency: "USD" };
 
     try {
       if (editMode) {
@@ -81,28 +77,16 @@ const DatabasePage = () => {
         formData.images.forEach((file) => {
           formDataImage.append("image", file);
         });
-        if (editMode) {
-          await axios.post(
-            `http://46.101.131.127:8090/api/v1/products/${currentProductId}/upload-image`,
-            formDataImage
-          );
-        } else {
-          await axios.post(
-            "http://46.101.131.127:8090/api/v1/products/upload-image",
-            formDataImage
-          );
-        }
+        const uploadUrl = editMode
+          ? `http://46.101.131.127:8090/api/v1/products/${currentProductId}/upload-image`
+          : "http://46.101.131.127:8090/api/v1/products/upload-image";
+        await axios.post(uploadUrl, formDataImage);
       }
 
       setShowModal(false);
       fetchProducts();
     } catch (err) {
-      console.error("Error saving product", err);
-      if (err.response) {
-        toast.error("Failed to save product.");
-      } else {
-        toast.error("An unexpected error occurred.");
-      }
+      toast.error("Failed to save product.");
     }
   };
 
@@ -116,17 +100,15 @@ const DatabasePage = () => {
       setCurrentProductId(productId);
       setShowModal(true);
     } catch (err) {
-      console.error("Error fetching product", err);
       toast.error("Failed to fetch product for editing.");
     }
   };
 
   const handleDelete = async (productId) => {
-    // Show confirmation dialog before deleting
     const confirmed = window.confirm(
       "Are you sure you want to delete this product?"
     );
-    if (!confirmed) return; // Exit the function if the user cancels
+    if (!confirmed) return;
 
     try {
       await axios.delete(
@@ -135,9 +117,14 @@ const DatabasePage = () => {
       fetchProducts();
       toast.success("Product deleted successfully!");
     } catch (err) {
-      console.error("Error deleting product", err);
       toast.error("Failed to delete product.");
     }
+  };
+
+  const getImageUrl = (imageUrl) => {
+    return `http://46.101.131.127:8090/api/v1/files/image?imageUrl=${encodeURIComponent(
+      imageUrl
+    )}`;
   };
 
   return (
@@ -198,7 +185,7 @@ const DatabasePage = () => {
                         <img
                           src={
                             product.images && product.images.length > 0
-                              ? product.images[0]
+                              ? getImageUrl(product.images[0])
                               : "static/images/tshirt.png"
                           }
                           alt={product.name}
@@ -349,7 +336,7 @@ const DatabasePage = () => {
                   />
                 </div>
                 <div className={styles["form-row"]}>
-                  <label htmlFor="quantity">Количество:</label>
+                  <label htmlFor="quantity">Кол-во:</label>
                   <input
                     type="number"
                     id="quantity"
@@ -359,26 +346,15 @@ const DatabasePage = () => {
                     required
                   />
                 </div>
-                <div className={styles["form-row"]}>
-                  <label htmlFor="store">Магазин:</label>
-                  <input
-                    type="text"
-                    id="store"
-                    name="store"
-                    value={formData.store}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
                 <button type="submit" className={styles["submit-btn"]}>
-                  {editMode ? "Сохранить изменения" : "Добавить продукт"}
+                  {editMode ? "Обновить" : "Добавить"}
                 </button>
               </form>
             </div>
           </div>
         )}
-        <ToastContainer />
       </div>
+      <ToastContainer />
     </div>
   );
 };

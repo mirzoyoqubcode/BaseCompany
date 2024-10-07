@@ -8,6 +8,7 @@ import SalesPage from "./components/SalesPage/SalesPage";
 import History from "./components/History/History";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ProtectedRoute from "./ProtectedRoute";
 
 const App = () => {
   return (
@@ -28,9 +29,15 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/database" element={<DatabasePage />} />
+        <Route
+          path="/database"
+          element={<ProtectedRoute element={<DatabasePage />} />}
+        />
         <Route path="/clients" element={<ClientsPage />} />
-        <Route path="/historyofcheck" element={<History />} />
+        <Route
+          path="/historyofcheck"
+          element={<ProtectedRoute element={<History />} />}
+        />
         <Route path="/sales" element={<SalesPage />} />
       </Routes>
     </div>
