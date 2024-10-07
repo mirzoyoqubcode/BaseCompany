@@ -1,21 +1,37 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import styles from "./SalesPage.module.scss";
 import { ThreeDots } from "react-loader-spinner";
 import { toast } from "react-toastify";
 import { AiOutlineSearch, AiOutlineShoppingCart } from "react-icons/ai";
-import jsPDF from "jspdf"; // Use jsPDF imported from CDN
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Navbar/Navbar";
-import autoTable from "jspdf-autotable"; // Use AutoTable imported from CDN
 
 const API_URL = "http://46.101.131.127:8090/api/v1/products";
-const ORDER_API_URL = "http://46.101.131.127:8090/api/v1/orders";
+const CLIENT_API_URL = "http://46.101.131.127:8090/api/v1/clients"; // New Client API URL
 
 const SalesPage = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchCode, setSearchCode] = useState("");
+  const [clients, setClients] = useState([]); // State for clients
+  const [selectedClientId, setSelectedClientId] = useState(null); // State for selected client
+
+  useEffect(() => {
+    // Fetch the client list when the component mounts
+    const fetchClients = async () => {
+      try {
+        const response = await fetch(CLIENT_API_URL);
+        if (!response.ok) throw new Error("Ошибка при загрузке клиентов.");
+        const data = await response.json();
+        setClients(data);
+      } catch (error) {
+        console.error("Ошибка при загрузке клиентов:", error);
+        toast.error("Ошибка при загрузке клиентов.");
+      }
+    };
+    fetchClients();
+  }, []);
 
   const handleSearch = useCallback(async () => {
     if (!searchCode) {
@@ -30,17 +46,27 @@ const SalesPage = () => {
       if (!response.ok) throw new Error("Продукт не найден.");
 
       const data = await response.json();
+
       setProducts((prevProducts) => {
         const existingProductIndex = prevProducts.findIndex(
           (p) => p.productId === data.productId
         );
+
+        const updatedProduct = {
+          ...data,
+          localQuantity: 1,
+          imageUrl:
+            data.images.length > 0
+              ? data.images[0]
+              : "static/images/tshirt.png",
+        };
 
         if (existingProductIndex !== -1) {
           const updatedProducts = [...prevProducts];
           updatedProducts[existingProductIndex].localQuantity += 1;
           return updatedProducts;
         } else {
-          return [...prevProducts, { ...data, localQuantity: 1 }];
+          return [...prevProducts, updatedProduct];
         }
       });
     } catch (error) {
@@ -83,68 +109,45 @@ const SalesPage = () => {
     );
   };
 
-  const handleCheckout = async () => {
-    // Checkout logic to save order goes here
-  };
+  const handleDownloadInvoice = async () => {
+    if (!selectedClientId) {
+      toast.error("Пожалуйста, выберите клиента.");
+      return;
+    }
 
-  // Function to handle PDF download
-  const handleDownloadInvoice = () => {
-    const doc = new jsPDF();
-    doc.setFont("Helvetica", "normal");
+    const orderItems = products.map((product) => ({
+      productId: product.productId,
+      quantity: product.localQuantity,
+      price: product.sellingPrice,
+    }));
 
-    // Title
-    doc.setFontSize(20);
-    doc.text("Инвойс", 20, 20);
+    const orderData = {
+      clientId: selectedClientId,
+      orderItems: orderItems,
+      currencyRate: 1, // Adjust this based on your requirements
+    };
 
-    // Add invoice date
-    doc.setFontSize(12);
-    doc.text(`Дата: ${new Date().toLocaleDateString()}`, 20, 30);
+    try {
+      const response = await fetch("http://46.101.131.127:8090/api/v1/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      });
 
-    // Column headers
-    const headers = [
-      "№",
-      "Наименование",
-      "КОД",
-      "Цена",
-      "Тип",
-      "Склад",
-      "Доступно",
-      "Кол-во",
-      "Итого",
-    ];
+      if (!response.ok) {
+        throw new Error("Ошибка при создании заказа.");
+      }
 
-    // Prepare data for the table
-    const tableData = products.map((product, index) => [
-      (index + 1).toString(),
-      product.name,
-      product.productId.toString(),
-      product.sellingPrice.toFixed(2),
-      product.type,
-      product.store,
-      product.quantity.toString(),
-      product.localQuantity.toString(),
-      (product.sellingPrice * product.localQuantity).toFixed(2),
-    ]);
-
-    // Use jsPDF-AutoTable to create a table
-    autoTable(doc, {
-      head: [headers],
-      body: tableData,
-      startY: 50,
-      styles: { cellPadding: 5, fontSize: 10 },
-    });
-
-    // Total amount at the end of the invoice
-    const totalAmount = calculateTotal();
-    doc.setFont("Helvetica", "bold");
-    doc.text(
-      `Общая сумма: ${totalAmount.toFixed(2)} сум`,
-      20,
-      doc.autoTable.previous.finalY + 10
-    );
-
-    // Save the PDF
-    doc.save("invoice.pdf");
+      const result = await response.json();
+      console.log("Заказ успешно создан:", result);
+      toast.success("Заказ успешно создан!");
+      window.print(); // Print the invoice after successful order creation
+    } catch (error) {
+      console.error("Ошибка при создании заказа:", error);
+      toast.error("Ошибка при создании заказа.");
+    }
   };
 
   return (
@@ -163,6 +166,21 @@ const SalesPage = () => {
         <button className={styles.searchBtn} onClick={handleSearch}>
           <AiOutlineSearch size={24} />
         </button>
+      </div>
+      <div className={styles.clientSelectContainer}>
+        <select
+          value={selectedClientId || ""}
+          onChange={(e) => setSelectedClientId(e.target.value)}
+        >
+          <option value="" disabled>
+            Выберите клиента
+          </option>
+          {clients.map((client) => (
+            <option key={client.id} value={client.id}>
+              {client.name} - {client.phoneNumber}
+            </option>
+          ))}
+        </select>
       </div>
       <div className={styles.tableContainer}>
         {isLoading ? (
@@ -195,7 +213,7 @@ const SalesPage = () => {
                   <td>{index + 1}</td>
                   <td>
                     <img
-                      src={product.images[0] || "static/images/tshirt.png"}
+                      src={product.imageUrl}
                       alt={product.name}
                       className={styles.productImg}
                     />

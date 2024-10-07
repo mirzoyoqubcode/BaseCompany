@@ -10,23 +10,24 @@ const History = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Function to fetch the orders (GET method)
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch(ORDER_API_URL);
+      if (!response.ok) throw new Error("Failed to fetch orders");
+
+      const data = await response.json();
+      setOrders(data); // Assuming data is an array of orders
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      toast.error("Ошибка загрузки истории заказов: " + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch(ORDER_API_URL);
-        if (!response.ok) throw new Error("Failed to fetch orders");
-
-        const data = await response.json();
-        setOrders(data);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-        toast.error("Ошибка загрузки истории заказов: " + error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchOrders();
+    fetchOrders(); // Fetch the orders when the component mounts
   }, []);
 
   return (
@@ -52,6 +53,7 @@ const History = () => {
             <thead>
               <tr>
                 <th>Номер заказа</th>
+                <th>Клиент</th>
                 <th>Список товаров</th>
                 <th>Общая сумма</th>
                 <th>Дата</th>
@@ -60,28 +62,37 @@ const History = () => {
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan="4">Нет заказов</td>
+                  <td colSpan="5">Нет заказов</td>
                 </tr>
               ) : (
                 orders.map((order) => (
                   <motion.tr
-                    key={order.id}
+                    key={order.orderId}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5 }}
                   >
-                    <td>{order.id}</td>
+                    <td>{order.orderId}</td>
+                    <td>
+                      {order.client.name} <br />
+                      Телефон: {order.client.phoneNumber} <br />
+                      Telegram: {order.client.telegramUsername}
+                    </td>
                     <td>
                       <ul>
                         {order.orderItems.map((item) => (
                           <li key={item.productId}>
-                            {item.productId} (x{item.quantity})
+                            {item.productName} (x{item.quantity}) - {item.price}{" "}
+                            {item.currency}
                           </li>
                         ))}
                       </ul>
                     </td>
-                    <td>{order.totalPrice.toFixed(2)} сум</td>
-                    <td>{new Date(order.createdAt).toLocaleString()}</td>
+                    <td>
+                      {order.totalAmount.toFixed(2)}{" "}
+                      {order.orderItems[0].currency}
+                    </td>
+                    <td>{new Date(order.createdDate).toLocaleString()}</td>
                   </motion.tr>
                 ))
               )}
