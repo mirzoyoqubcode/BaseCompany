@@ -12,7 +12,9 @@ const Navbar = () => {
   return (
     <nav className={styles.navbar}>
       <button className={styles.backButton} onClick={handleBackButtonClick}>
-        <IoMdArrowBack />
+        <Link className={styles.link} to="/">
+          <IoMdArrowBack />
+        </Link>
         Назад
       </button>
       <h1 className={styles.title}>Добро пожаловать!</h1>
