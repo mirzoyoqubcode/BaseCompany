@@ -28,7 +28,7 @@ const Dashboard = () => {
           className={styles.searchButton}
           onClick={() => console.log("Search clicked")}
         >
-          <FaSearch /> Search
+          <FaSearch /> Поиск
         </button>
       </div>
       <div className={styles.buttonGroup}>
