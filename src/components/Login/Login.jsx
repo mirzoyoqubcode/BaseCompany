@@ -19,7 +19,7 @@ const Login = () => {
     setIsSubmitting(true);
 
     setTimeout(() => {
-      if (username === "mirzoyoqub" && password === "mirzoyoqub2004") {
+      if (username === "admin1" && password === "09092024") {
         login();
         const redirectPath = location.state?.from || "/dashboard";
         navigate(redirectPath);
