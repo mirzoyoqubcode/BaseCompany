@@ -21,7 +21,7 @@ const Login = () => {
     setTimeout(() => {
       if (username === "admin1" && password === "09092024") {
         login();
-        const redirectPath = location.state?.from || "/dashboard";
+        const redirectPath = location.state?.from || "/";
         navigate(redirectPath);
       } else {
         setError("Неверные учетные данные");
