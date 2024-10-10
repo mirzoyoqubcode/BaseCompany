@@ -59,3 +59,20 @@ h1 {
     }
   }
 }
+.filterContainer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filterContainer label {
+  margin-right: 10px;
+}
+
+.datePicker {
+  margin-right: 20px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

@@ -26,10 +26,9 @@ const DatabasePage = () => {
   const [currentProductId, setCurrentProductId] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch products only on initial load
   useEffect(() => {
     fetchProducts();
-    const interval = setInterval(fetchProducts, 25000);
-    return () => clearInterval(interval);
   }, []);
 
   const fetchProducts = async () => {
@@ -61,15 +60,31 @@ const DatabasePage = () => {
     const data = { ...formData, currency: "USD" };
 
     try {
+      let product;
       if (editMode) {
         await axios.put(
           `http://46.101.131.127:8090/api/v1/products/${currentProductId}`,
           data
         );
         toast.success("Product updated successfully!");
+
+        // Update the product in the state without re-fetching
+        product = { ...data, productId: currentProductId };
+        setBazaData((prevData) =>
+          prevData.map((item) =>
+            item.productId === currentProductId ? product : item
+          )
+        );
       } else {
-        await axios.post("http://46.101.131.127:8090/api/v1/products", data);
+        const response = await axios.post(
+          "http://46.101.131.127:8090/api/v1/products",
+          data
+        );
         toast.success("Product added successfully!");
+        product = response.data;
+
+        // Add new product to the state without re-fetching
+        setBazaData((prevData) => [...prevData, product]);
       }
 
       if (formData.images.length > 0) {
@@ -79,12 +94,11 @@ const DatabasePage = () => {
         });
         const uploadUrl = editMode
           ? `http://46.101.131.127:8090/api/v1/products/${currentProductId}/upload-image`
-          : "http://46.101.131.127:8090/api/v1/products/upload-image";
+          : `http://46.101.131.127:8090/api/v1/products/${product.productId}/upload-image`;
         await axios.post(uploadUrl, formDataImage);
       }
 
       setShowModal(false);
-      fetchProducts();
     } catch (err) {
       toast.error("Failed to save product.");
     }
@@ -111,11 +125,24 @@ const DatabasePage = () => {
     if (!confirmed) return;
 
     try {
-      await axios.delete(
-        `http://46.101.131.127:8090/api/v1/products/${productId}`
+      const response = await axios.delete(
+        `http://46.101.131.127:8090/api/v1/products/${productId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
-      fetchProducts();
-      toast.success("Product deleted successfully!");
+
+      if (response.status === 200) {
+        // Remove the deleted product from the state without re-fetching
+        setBazaData((prevData) =>
+          prevData.filter((product) => product.productId !== productId)
+        );
+        toast.success("Product deleted successfully!");
+      } else {
+        toast.error("Failed to delete product.");
+      }
     } catch (err) {
       toast.error("Failed to delete product.");
     }
@@ -125,6 +152,28 @@ const DatabasePage = () => {
     return `http://46.101.131.127:8090/api/v1/files/image?imageUrl=${encodeURIComponent(
       imageUrl
     )}`;
+  };
+
+  const ProductImage = ({ imageUrl, name }) => {
+    const [imageLoaded, setImageLoaded] = useState(false);
+
+    return (
+      <div className={styles.imageWrapper}>
+        {!imageLoaded && (
+          <div className={styles.imageLoader}>
+            <ThreeDots color="#00BFFF" height={40} width={40} />
+          </div>
+        )}
+        <img
+          loading="lazy"
+          src={getImageUrl(imageUrl)}
+          alt={name}
+          className={styles.image}
+          style={{ display: imageLoaded ? "block" : "none" }}
+          onLoad={() => setImageLoaded(true)}
+        />
+      </div>
+    );
   };
 
   return (
@@ -182,15 +231,18 @@ const DatabasePage = () => {
                     <tr key={product.productId}>
                       <td>{index + 1}</td>
                       <td>
-                        <img
-                          src={
-                            product.images && product.images.length > 0
-                              ? getImageUrl(product.images[0])
-                              : "static/images/tshirt.png"
-                          }
-                          alt={product.name}
-                          className={styles.image}
-                        />
+                        {product.images && product.images.length > 0 ? (
+                          <ProductImage
+                            imageUrl={product.images[0]}
+                            name={product.name}
+                          />
+                        ) : (
+                          <img
+                            src="static/images/tshirt.png"
+                            alt={product.name}
+                            className={styles.image}
+                          />
+                        )}
                       </td>
                       <td>{product.productId}</td>
                       <td>{product.name}</td>
@@ -277,77 +329,10 @@ const DatabasePage = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    required
-                  />
+                  ></textarea>
                 </div>
-                <div className={styles["form-row"]}>
-                  <label htmlFor="type">Тип:</label>
-                  <input
-                    type="text"
-                    id="type"
-                    name="type"
-                    value={formData.type}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className={styles["form-row"]}>
-                  <label htmlFor="purchasedPrice">Покупка:</label>
-                  <input
-                    type="number"
-                    id="purchasedPrice"
-                    name="purchasedPrice"
-                    value={formData.purchasedPrice}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className={styles["form-row"]}>
-                  <label htmlFor="deliveryPrice">Карго:</label>
-                  <input
-                    type="number"
-                    id="deliveryPrice"
-                    name="deliveryPrice"
-                    value={formData.deliveryPrice}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className={styles["form-row"]}>
-                  <label htmlFor="benefit">Прибыль:</label>
-                  <input
-                    type="number"
-                    id="benefit"
-                    name="benefit"
-                    value={formData.benefit}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className={styles["form-row"]}>
-                  <label htmlFor="sellingPrice">Цена:</label>
-                  <input
-                    type="number"
-                    id="sellingPrice"
-                    name="sellingPrice"
-                    value={formData.sellingPrice}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className={styles["form-row"]}>
-                  <label htmlFor="quantity">Кол-во:</label>
-                  <input
-                    type="number"
-                    id="quantity"
-                    name="quantity"
-                    value={formData.quantity}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <button type="submit" className={styles["submit-btn"]}>
-                  {editMode ? "Обновить" : "Добавить"}
+                <button type="submit">
+                  {editMode ? "Сохранить изменения" : "Добавить продукт"}
                 </button>
               </form>
             </div>

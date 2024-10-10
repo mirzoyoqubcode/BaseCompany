@@ -3,21 +3,25 @@ import styles from "./History.module.scss";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import Navbar from "../Navbar/Navbar";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const ORDER_API_URL = "http://46.101.131.127:8090/api/v1/orders";
 
 const History = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [filteredOrders, setFilteredOrders] = useState([]);
 
-  // Function to fetch the orders (GET method)
   const fetchOrders = async () => {
     try {
       const response = await fetch(ORDER_API_URL);
       if (!response.ok) throw new Error("Failed to fetch orders");
 
       const data = await response.json();
-      setOrders(data); // Assuming data is an array of orders
+      setOrders(data);
+      setFilteredOrders(data); // Initially show all orders
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Ошибка загрузки истории заказов: " + error.message);
@@ -27,14 +31,47 @@ const History = () => {
   };
 
   useEffect(() => {
-    fetchOrders(); // Fetch the orders when the component mounts
+    fetchOrders();
   }, []);
+
+  // Function to handle filtering when the Search button is clicked
+  const handleSearch = () => {
+    if (!selectedDate) {
+      setFilteredOrders(orders); // Show all if no date is selected
+    } else {
+      const filtered = orders.filter((order) => {
+        const orderDate = new Date(order.createdDate);
+        return (
+          orderDate.getFullYear() === selectedDate.getFullYear() &&
+          orderDate.getMonth() === selectedDate.getMonth() &&
+          orderDate.getDate() === selectedDate.getDate()
+        );
+      });
+      setFilteredOrders(filtered); // Update filtered orders
+    }
+  };
 
   return (
     <div className={styles.container}>
       <Navbar />
       <div className={styles.historyContainer}>
         <h1>История заказов</h1>
+
+        {/* Date filter */}
+        <div className={styles.filterContainer}>
+          <label htmlFor="selectedDate">Выберите дату:</label>
+          <DatePicker
+            selected={selectedDate}
+            onChange={(date) => setSelectedDate(date)}
+            dateFormat="dd/MM/yyyy"
+            className={styles.datePicker}
+            placeholderText="Выберите дату"
+          />
+          <button onClick={handleSearch} className={styles.searchButton}>
+            Поиск
+          </button>
+        </div>
+
         {isLoading ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -60,12 +97,12 @@ const History = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.length === 0 ? (
+              {filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan="5">Нет заказов</td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                filteredOrders.map((order) => (
                   <motion.tr
                     key={order.orderId}
                     initial={{ opacity: 0 }}
@@ -83,16 +120,12 @@ const History = () => {
                         {order.orderItems.map((item) => (
                           <li key={item.productId}>
                             {item.productName} (x{item.quantity}) - {item.price}{" "}
-                            {item.currency}
                           </li>
                         ))}
                       </ul>
                     </td>
-                    <td>
-                      {order.totalAmount.toFixed(2)}{" "}
-                      {order.orderItems[0].currency}
-                    </td>
-                    <td>{new Date(order.createdDate).toLocaleString()}</td>
+                    <td>{order.totalAmount.toFixed(2)}</td>
+                    <td>{new Date(order.createdDate).toLocaleDateString()}</td>
                   </motion.tr>
                 ))
               )}

@@ -1,28 +1,20 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styles from "./Navbar.module.scss";
 import { IoMdArrowBack } from "react-icons/io";
 const Navbar = () => {
-  const navigate = useNavigate();
-
-  const handleBackButtonClick = () => {
-    navigate("/dashboard");
-  };
-
   return (
     <nav className={styles.navbar}>
-      <button className={styles.backButton} onClick={handleBackButtonClick}>
-        <Link className={styles.link} to="/">
+      <Link className={styles.link} to="/">
+        <button className={styles.backButton}>
           <IoMdArrowBack />
-        </Link>
-        Назад
-      </button>
+          Назад
+        </button>
+      </Link>
       <h1 className={styles.title}>Добро пожаловать!</h1>
-      <button className={styles.historyButton}>
-        <Link to={"/historyofcheck"} className={styles.link}>
-          История
-        </Link>
-      </button>
+      <Link to={"/historyofcheck"} className={styles.link}>
+        <button className={styles.historyButton}>История</button>
+      </Link>
     </nav>
   );
 };
